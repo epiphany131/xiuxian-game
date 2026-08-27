@@ -1,0 +1,11 @@
+node_modules
+npm-debug.log*
+.git
+.gitignore
+.env
+.env.*
+*.pem
+.DS_Store
+server/data/save_*.json
+README*
+制作修行小游戏.zip

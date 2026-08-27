@@ -188,6 +188,57 @@ http://localhost:3000
 PORT=8080 npm start
 ```
 
+## Docker 部署
+
+项目提供 `Dockerfile` 和 `docker-compose.yml`，可以使用 Docker 快速启动，并将服务端存档保存到 Docker 命名卷中。
+
+### 使用 Docker Compose
+
+```bash
+docker compose up -d --build
+```
+
+启动后访问：
+
+```text
+http://localhost:3000
+```
+
+查看运行状态和日志：
+
+```bash
+docker compose ps
+docker compose logs -f xiuxian-game
+```
+
+停止服务：
+
+```bash
+docker compose down
+```
+
+默认映射关系：
+
+- 宿主机 `3000` → 容器 `3000`
+- Docker 卷 `xiuxian-game-data` → 容器 `/app/server/data`
+
+### 使用 Docker 命令
+
+```bash
+docker build -t xiuxian-game:latest .
+docker volume create xiuxian-game-data
+docker run -d \\
+  --name xiuxian-game \\
+  --restart unless-stopped \\
+  -p 3000:3000 \\
+  -v xiuxian-game-data:/app/server/data \\
+  xiuxian-game:latest
+```
+
+修改端口时，将端口映射改为例如 `8080:3000`，游戏访问地址为 `http://localhost:8080`。
+
+容器使用非 root 用户运行，生产依赖通过 `npm ci --omit=dev` 安装，运行时存档通过命名卷持久化。
+
 ## 存档机制
 
 项目同时支持浏览器端和服务端两类存档方式：

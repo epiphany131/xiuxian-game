@@ -1,0 +1,17 @@
+services:
+  xiuxian-game:
+    build:
+      context: .
+    image: xiuxian-game:latest
+    container_name: xiuxian-game
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - xiuxian-game-data:/app/server/data
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+
+volumes:
+  xiuxian-game-data:
