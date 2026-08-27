@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>修仙问道 · 放置挂机</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="bg"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <h1 class="title">修 仙 问 道</h1>
+    <span class="subtitle">放置挂机 · 逍遥修仙</span>
+  </div>
+  <div class="topbar-actions">
+    <span id="saveState" class="save-state"></span>
+    <button id="btnSign" class="btn btn-ghost">签到<span id="signStreak" class="achv-count"></span></button>
+    <button id="btnReinc" class="btn btn-warning hidden">轮回转世</button>
+    <button id="btnAchv" class="btn btn-ghost">成就 <span id="achvCount" class="achv-count"></span></button>
+    <button id="btnCodex" class="btn btn-ghost">图鉴 <span id="codexCount" class="achv-count"></span></button>
+    <button id="btnGuide" class="btn btn-ghost">玩法速览</button>
+    <button id="btnSave" class="btn btn-ghost">存档</button>
+    <button id="btnExport" class="btn btn-ghost">导出</button>
+    <button id="btnImport" class="btn btn-ghost">导入</button>
+    <input id="saveFileInput" type="file" accept=".json,application/json" class="hidden" />
+    <button id="btnReset" class="btn btn-ghost btn-danger">重置</button>
+  </div>
+</header>
+
+<main class="layout">
+  <!-- 左侧：境界与修炼 -->
+  <section class="panel realm-panel" id="realmPanel">
+    <div class="realm-display">
+      <div class="realm-badge" id="realmBadge">练气期</div>
+      <div class="realm-desc" id="realmDesc"></div>
+    </div>
+
+    <div class="fate-row">
+      <span class="fate-badge" id="rootBadge">灵根 · 杂灵根</span>
+      <span class="fate-badge" id="physiqueBadge">体质 · 凡体</span>
+    </div>
+
+    <div class="stat-row">
+      <span class="stat-label">灵石</span>
+      <span class="stat-value gold" id="statStones">0</span>
+      <span class="stat-sub" id="statStoneRate">+0/秒</span>
+    </div>
+
+    <div class="bar-wrap">
+      <div class="bar-label">
+        <span>修为</span>
+        <span id="cultText">0 / 100</span>
+      </div>
+      <div class="bar track">
+        <div class="bar fill cult" id="cultBar"></div>
+      </div>
+    </div>
+
+    <div class="bar-wrap">
+      <div class="bar-label">
+        <span>心魔</span>
+        <span id="demonText">0</span>
+      </div>
+      <div class="bar track">
+        <div class="bar fill demon" id="demonBar"></div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="btnMeditate" class="btn btn-primary btn-big">打坐修炼</button>
+      <button id="btnBreak" class="btn btn-warning btn-big">
+        突破境界<span id="breakChance"></span>
+      </button>
+    </div>
+
+    <div class="rate-line">
+      <span>修为 <b id="cultRate">0</b>/秒</span>
+      <span>灵石 <b id="stoneRate">0</b>/秒</span>
+      <span>轮回 <b id="reincBonus">0</b></span>
+    </div>
+
+    <div class="combat-line">
+      <span>战力 <b id="combatPower">0</b></span>
+      <button id="btnRootAdvance" class="btn btn-secondary btn-small">灵根进阶</button>
+    </div>
+
+    <div class="combat-line celestial-line hidden" id="celestialLine">
+      <span>仙器 <b id="celestialCult">+0%</b> 修</span>
+      <span>仙兽 <b id="celestialPet">+0%</b> 修 / <b id="celestialPetCbt">+0</b> 战</span>
+    </div>
+  </section>
+
+  <!-- 右侧：标签导航，按系统分组集中展示 -->
+  <section class="right">
+    <nav class="tabbar" id="tabbar">
+      <button class="tab-btn active" data-tab="cult">修炼</button>
+      <button class="tab-btn" data-tab="src">经营</button>
+      <button class="tab-btn" data-tab="war">征战</button>
+      <button class="tab-btn" data-tab="sect">宗门</button>
+      <button class="tab-btn" data-tab="daily">日常</button>
+      <button class="tab-btn" data-tab="xian">仙界</button>
+    </nav>
+
+    <div class="tabpanes">
+      <!-- 修炼：功法 / 悟道 / 炼体 / 传承 / 符阵 -->
+      <div class="tab-pane active" data-pane="cult">
+        <div class="pane-grid">
+          <div class="panel">
+            <h2 class="panel-title">功法秘典</h2>
+            <div class="method-curr">
+              <div class="method-name">当前 · <span id="methodName">天衍诀</span> <span id="methodLevel">Lv.1</span></div>
+              <div class="method-bonus" id="methodBonus">修炼速度 +0%</div>
+              <button id="btnMethod" class="btn btn-secondary">参悟功法（<span id="methodCost">0</span> 灵石）</button>
+            </div>
+            <div id="methodList" class="method-list"></div>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">悟道神通<span class="divine-points" id="divinePoints">悟道点 0</span></h2>
+            <div class="divine-tip">参悟神通，固化道途。每次突破成功得 1 悟道点，轮回转世得 3 点。</div>
+            <div id="divineList" class="divine-list"></div>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">炼体境界<span class="divine-points" id="bodyBadge">不入流</span></h2>
+            <div class="divine-tip">淬炼肉身，境界越高气血越盛，战力与突破皆受益。</div>
+            <div class="bar-wrap">
+              <div class="bar-label"><span>体修</span><span id="bodyText">0 / 60</span></div>
+              <div class="bar track"><div class="bar fill cult" id="bodyBar"></div></div>
+            </div>
+            <div class="body-actions">
+              <button id="btnBodyTrain" class="btn btn-secondary">淬体（<span id="bodyTrainCost">10</span> 灵石）</button>
+              <button id="btnBodyBreak" class="btn btn-warning">肉身突破<span id="bodyBreakChance"></span></button>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">传承道统<span class="divine-points" id="legacyPoints">传承点 0</span></h2>
+            <div class="divine-tip">轮回转世积累传承功业，点亮道纹，增益万世不灭。</div>
+            <div id="legacy" class="legacy"></div>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">符箓阵法</h2>
+            <div class="divine-tip">以灵草精铁炼制符箓，布设阵法增益道途。</div>
+            <div id="talismans" class="talismans"></div>
+            <div class="ore-line form-title">阵法 · 持续增益</div>
+            <div id="formations" class="formations"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 经营：洞府 / 灵田 / 丹药 / 炼丹 / 云游 / 坊市 / 拍卖 -->
+      <div class="tab-pane" data-pane="src">
+        <div class="pane-grid">
+          <div class="panel">
+            <h2 class="panel-title">洞府 · 灵犀居</h2>
+            <div class="method-info">
+              <div class="method-name">洞府层数 <span id="dwellingLevel">Lv.1</span></div>
+              <div class="method-bonus" id="dwellingBonus">产出 +0%</div>
+              <button id="btnDwelling" class="btn btn-secondary">扩建洞府（<span id="dwellingCost">0</span> 灵石）</button>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">灵田 · 药圃</h2>
+            <div class="field-tip">播种灵草，成熟后收获，为炼丹备料。</div>
+            <div id="fields" class="fields"></div>
+            <button id="btnFieldUnlock" class="btn btn-secondary field-unlock hidden">开辟灵田（<span id="fieldUnlockCost"></span> 灵石）</button>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">丹药坊</h2>
+            <div id="pills" class="pills"></div>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">炼丹炉</h2>
+            <div class="alchemy-tip">以灵草为引，依丹方炼制灵丹。</div>
+            <div id="recipes" class="recipes"></div>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">云游历练</h2>
+            <div class="travel-tip">踏遍山川，寻访机缘，无精力消耗，各有冷却。</div>
+            <div id="travel" class="travel"></div>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">坊市</h2>
+            <div class="market-tip">每日随机折扣，囤积灵材待价而沽。</div>
+            <div id="market" class="market"></div>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">拍卖行<span class="divine-points" id="auctionTimer"></span></h2>
+            <div class="market-tip">各宗俊杰藏宝待沽，竞得心仪法器灵材。</div>
+            <div id="auction" class="auction"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 征战：法宝 / 战斗历练 / 秘境 / 宗门大比 -->
+      <div class="tab-pane" data-pane="war">
+        <div class="pane-grid">
+          <div class="panel">
+            <h2 class="panel-title">法宝</h2>
+            <div class="ore-line"><span>炼器材料</span><b class="gold" id="oreCount">精铁 0</b></div>
+            <div id="treasures" class="treasures"></div>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">战斗历练</h2>
+            <div id="tower" class="tower"></div>
+            <div id="boss" class="boss"></div>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">秘境试炼</h2>
+            <div class="energy-line">
+              <span>精力</span>
+              <span class="energy-text" id="energyText">20 / 20</span>
+            </div>
+            <div class="bar track energy-track">
+              <div class="bar fill energy" id="energyBar"></div>
+            </div>
+            <div id="dungeons" class="dungeons"></div>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">宗门大比 · 敌宗</h2>
+            <div class="divine-tip">挥师讨伐敌对宗门，得胜可获灵石精铁、宗门贡献与威望。</div>
+            <div class="pres-line">宗门威望 <b class="gold" id="presText">0</b>（修炼/灵石/战力 <span id="presBonus">+0%</span>）</div>
+            <div id="war" class="war"></div>
+            <button id="btnTourney" class="btn btn-warning btn-big tourney-btn">宗门大比（500 贡献<span id="tourneyCd"></span>）</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 宗门：宗门 / 收徒 / 道侣 -->
+      <div class="tab-pane" data-pane="sect">
+        <div class="pane-grid">
+          <div class="panel">
+            <h2 class="panel-title">宗门</h2>
+            <div id="sect" class="sect"></div>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">收徒传道</h2>
+            <div class="divine-tip">收下根骨不凡的弟子培育，弟子修为越高，你的道途受益越深。</div>
+            <div id="disciples" class="disciples"></div>
+            <button id="btnDisciple" class="btn btn-secondary disciple-take">收徒（<span id="discipleCost">1500</span> 灵石）</button>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">道侣双修</h2>
+            <div id="spouse" class="spouse"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 日常：每日任务 / 灵宠 / 日志 -->
+      <div class="tab-pane" data-pane="daily">
+        <div class="pane-grid">
+          <div class="panel">
+            <h2 class="panel-title">每日任务</h2>
+            <div class="quest-head">
+              <span class="quest-tip">每日刷新 · 完成领取奖励</span>
+              <span class="quest-done" id="questDone">0/0</span>
+            </div>
+            <div id="quests" class="quests"></div>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">灵宠</h2>
+            <div id="pet" class="pet"></div>
+          </div>
+
+          <div class="panel log-panel">
+            <h2 class="panel-title">修行日志</h2>
+            <div id="log" class="log"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 仙界：仙器 / 仙宠 -->
+      <div class="tab-pane" data-pane="xian">
+        <div class="pane-grid">
+          <div class="panel">
+            <h2 class="panel-title">仙器阁<span class="divine-points" id="xianCrystalText">仙晶 0</span></h2>
+            <div class="divine-tip">以仙晶淬炼仙器，威能卓绝。需飞升仙界方可锻造。</div>
+            <div id="xianTreasures" class="xian-treasures"></div>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">仙兽谷<span class="divine-points">仙宠</span></h2>
+            <div class="divine-tip" id="xianOdds">寻访仙界灵兽：青龙30% / 白虎25% / 朱雀25% / 玄武20%</div>
+            <button id="btnSeekXianPet" class="btn btn-secondary disciple-take">访寻仙兽（<span id="xianSeekCost">300</span> 仙晶）</button>
+            <div id="xianPets" class="xian-pets"></div>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">仙晶坊</h2>
+            <div class="divine-tip">灵石滚滚，可于坊中兑作仙晶，以济仙器锻造与仙兽滋养之需。</div>
+            <button id="btnXianExchange" class="btn btn-secondary disciple-take" disabled>兑取仙晶 x<span id="xianBuyStep">10</span>（<span id="xianExchangeCost">35000</span> 灵石）</button>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">精魄坊<span class="divine-points" id="soulText">精魄 0</span></h2>
+            <div class="divine-tip">凝仙晶为精魄，精魄乃仙器神铸、仙兽血脉觉醒与契契上古神兽之基。仙晶后期多产于此途，砺至强者。</div>
+            <button id="btnBuySoul" class="btn btn-secondary disciple-take" disabled>凝一缕精魄（<span id="soulCost">800</span> 仙晶）</button>
+            <div class="divine-tip" id="soulUses">精魄用于：仙器神铸 / 仙兽觉醒 / 神兽契约</div>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">仙法道藏</h2>
+            <div class="divine-tip">以仙晶参悟无上道藏，顷刻道行精进。道藏一经参悟，永铭仙途。</div>
+            <div id="xianArts" class="xian-treasures"></div>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">上古神兽 · 混沌</h2>
+            <div class="divine-tip">四象之上，尚有混沌。吞噬万灵，鸿蒙未判。集至强精魄与仙晶，契此上古神兽，威临诸天。</div>
+            <div id="chaosStatus" class="disciple-desc">未契约 · 需 <span id="chaosCostSoul">15</span> 精魄 + <span id="chaosCostXian">30000</span> 仙晶</div>
+            <button id="btnSummonChaos" class="btn btn-warning disciple-take" disabled>契契混沌（<span id="chaosCostXian2">30000</span> 仙晶 + <span id="chaosCostSoul2">15</span> 精魄）</button>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">仙界试炼<span class="divine-points" id="xianTrialInfo"></span></h2>
+            <div class="divine-tip">踏入仙域试炼场，以战力酣战群妖，胜则仙晶灵石尽入囊中。每日有次数之限。</div>
+            <button id="btnXianTrial" class="btn btn-secondary disciple-take" disabled>踏入试炼（耗 <span id="xianTrialEnergy">5</span> 精力）</button>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">镇界塔<span class="divine-points" id="xianTowerFloor"></span></h2>
+            <div class="divine-tip">逐层挑战镇界守卫，消耗精力换取仙晶与精魄。每五重有里程碑奖励，登顶可获镇界之主称号。</div>
+            <div id="xianTower" class="xian-treasures"></div>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">仙侣结缘<span class="divine-points" id="xianSpouseBond"></span></h2>
+            <div class="divine-tip">择一位仙侣结缘，共赴双修。双修可获得修为、平息心魔，并逐步提升情缘。</div>
+            <div id="xianSpouse" class="xian-treasures"></div>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">仙缘图鉴</h2>
+            <div class="divine-tip">集齐四象仙兽，并使三件仙器臻至大圆满，可获混元无双之号，威临诸天。</div>
+            <div id="xianCodex" class="xian-treasures"></div>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">仙器套装</h2>
+            <div class="divine-tip">仙器之间暗合天地法则，集齐并神铸至仙品阶，可激发出相生相济的套装之威。</div>
+            <div id="xianSets" class="xian-treasures"></div>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">飞升仙府<span class="divine-points" id="manorText">仙府 0 层</span></h2>
+            <div class="divine-tip">开辟云端洞天，仙府会自行汇聚灵气，每时每刻产出仙晶；积攒日久更凝精魄。挂机修行之妙，尽在于此。</div>
+            <div class="disciple-desc" id="manorStatus">未开辟 · 需 <span id="manorCost">2000</span> 仙晶</div>
+            <button id="btnBuildManor" class="btn btn-secondary disciple-take" disabled>开辟仙府（<span id="manorCost2">2000</span> 仙晶）</button>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">仙兽试炼场<span class="divine-points" id="petTrialInfo"></span></h2>
+            <div class="divine-tip">令仙兽于试炼场出战酣战群妖，胜则仙晶精魄尽入囊中。每日有出战次数之限，仙兽亦需休整。</div>
+            <div id="xianPetTrials" class="xian-pets"></div>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">修仙排行榜<span class="divine-points" id="rankTitleText"></span></h2>
+            <div class="divine-tip">诸天万界，群雄并起。战力、境界、收藏，皆是威名所系。榜单群雄随时间缓慢精进，勿要懈怠。</div>
+            <div id="rankBoard" class="xian-treasures"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- 奇遇弹窗 -->
+<div class="modal-mask hidden" id="eventModal">
+  <div class="modal">
+    <h2 class="modal-title" id="eventTitle"></h2>
+    <p class="modal-text" id="eventText"></p>
+    <div class="modal-choices" id="eventChoices"></div>
+  </div>
+</div>
+
+<!-- 离线收益弹窗 -->
+<div class="modal-mask hidden" id="offlineModal">
+  <div class="modal">
+    <h2 class="modal-title">闭关归来</h2>
+    <p class="modal-text" id="offlineText"></p>
+    <button class="btn btn-primary" id="btnOffline">收下机缘</button>
+  </div>
+</div>
+
+<!-- 成就弹窗 -->
+<div class="modal-mask hidden" id="achvModal">
+  <div class="modal achv-modal">
+    <h2 class="modal-title">成 就 录<span class="achv-progress" id="achvProgress"></span></h2>
+    <div class="achv-grid" id="achvGrid"></div>
+    <button class="btn btn-ghost achv-close" id="btnAchvClose">关闭</button>
+  </div>
+</div>
+
+<!-- 图鉴弹窗 -->
+<div class="modal-mask hidden" id="codexModal">
+  <div class="modal codex-modal">
+    <h2 class="modal-title">万 物 图 鉴<span class="achv-progress" id="codexProgress"></span></h2>
+    <div class="codex-tip">集齐万物可得 10000 灵石 + 悟道丹、渡劫丹福缘！</div>
+    <div class="codex-grid" id="codexGrid"></div>
+    <button class="btn btn-ghost achv-close" id="btnCodexClose">关闭</button>
+  </div>
+</div>
+
+<!-- 玩法速览弹窗 -->
+<div class="modal-mask hidden" id="guideModal">
+  <div class="modal guide-modal">
+    <h2 class="modal-title">玩 法 速 览<span class="achv-progress">仙途漫漫，诸法皆可参</span></h2>
+    <div class="guide-grid" id="guideGrid"></div>
+    <button class="btn btn-ghost achv-close" id="btnGuideClose">踏上仙途</button>
+  </div>
+</div>
+
+<!-- 飞升弹窗 -->
+<div class="modal-mask hidden" id="ascendModal">
+  <div class="modal ascend">
+    <h2 class="modal-title ascend-title">白 日 飞 升</h2>
+    <p class="modal-text" id="ascendText"></p>
+    <button class="btn btn-primary" id="btnAscend">再入轮回</button>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<!-- 成就达成提示 -->
+<div id="achvToast" class="achv-toast hidden">
+  <div class="achv-toast-icon" id="achvToastIcon">道</div>
+  <div class="achv-toast-body">
+    <div class="achv-toast-title">成就达成</div>
+    <div class="achv-toast-name" id="achvToastName"></div>
+  </div>
+</div>
+
+<script src="js/game.js"></script>
+<script src="js/ui.js"></script>
+</body>
+</html>

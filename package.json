@@ -1,0 +1,12 @@
+{
+  "name": "xiuxian-idle",
+  "version": "1.0.0",
+  "description": "放置挂机修仙小游戏 - 修仙问道",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
